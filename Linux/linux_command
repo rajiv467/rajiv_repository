@@ -64,13 +64,20 @@
 	- wc test.txt    # will show the word, line charectors in test.txt file
 	
 - cut
-
+	- cut -f 1 test.txt   # this will show the 1st column
+	- cut -f 2 test.txt   # this will show the 2nd column
+	
 - file
-
+	- file test.txt      # will show the type of file like in this example text file
+	- file test.exe      # in this case this is a executable file
 - who
 	- who     # check the current login user
 
 - sort
+	- sort test.txt   # sort the file content alphabatically
+	- sort test1.txt test2.txt  # in this case merge both file content then sort it
+	- sort -o result.txt test1.txt test2.txt  # in this case merge both file content then sort it then reslurt will store in reslut.txt file
+	
 
 - cat	
 	- cat test.txt 	 			#show content of test.txt file
@@ -148,11 +155,21 @@
 			write-w-2
 			execute-x -1
 	 chmod 1775 test.txt  		#use "1" as "sticky bit" for directory and directory must be executable
-	    - if we add read/write/executable permission to group then any member can delete other member file so overcome for the we use "1" as "sticky bit"
-- umask
+	    - if we add read/write/executable permission to group then any member can delete other member file so for overcome this we use "1" as "sticky bit"
 
+- setuid     # value is "4"
+- setgid     # value is "2"
+- sticky     # value is "1"
+	- chmod 2777 test.txt    # this is an example of "setgid"
+	- chmod 4777 /usr/bin/passwrd    #in this we use "setuid"  so everyone can change the own password
+	- chmod 777 /usr/bin/passwrd     #in this case even everyone have all permission but noone can change their own password
+	
+- umask    #default permission for directory  is "022"
+	- umask 444     #if we use 444 then permission for directory will be 777-444= 333 mean write and execute
+	
 - chgrp
 
-- chown
+- chown     #change owner
+	- chown testuser f1.txt    # in this case we change the user(testuser) from existing one of f1.txt file
 
 -	
