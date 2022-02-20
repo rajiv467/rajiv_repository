@@ -1,0 +1,158 @@
+
+***************************Linux Command**************************
+
+- uname--- #check the kernal(# uname) 
+- uname -r   #release 
+- uname -v   # release version
+- uname -m  #machine
+- uname -o #OS
+- uname -a #all
+- man--- #check Mannual(# man uname)
+- whoami-- # to check user from which you login
+- hostname-- #check the hostname(# hostname)
+- tty--- #terminal take a input from standard file
+- sudo ------ super user access
+- sudo -i----(# login as root)
+- adduser  -----  create user(# adduser test1)
+- id  ---- check the information of user(# id -->check user infor about member of all groups name  with id)
+- users------ check currently login users
+- usermod----- modify the user(# sudo usermod -a -G sudo test1) ---> add test1 to sudo group-- a for append
+- groups---  check all effective groups of current user
+- addgroups-- create new group(# sudo addgroup test_group)
+- delgroups--- #delete group(# sudo delgroup test_group)
+- deluser--- #delete user(# sudo deluser test1)
+- su---- #switch user with other user(# su test1-->then enter password of test1)
+- exit---- #exit from test1 user console
+- clear---  #clear the terminal
+- date-- #check the date of system(# date --date 20220217)
+     - sudo date -s 2022-03-18 12:20:34(set/change the date and time)
+- cal--  #show the calander(# cal 2018)->show 2018 cal
+- echo--- print on terminal
+     - echo -e "Rajiv\tRupta" ---> for tab b/w Rajiv and Gupta
+	 - echo -e "\a Rajiv Gupta" ---> for audio sound
+	 - echo -e "\033[0;30m Rajiv " ---> change the font colour of Rajiv
+	 - echo -e "\033[0;31m Rajiv" ---> change the font colour of Rajiv
+	 - echo -e "\033[1;31m Rajiv" ---> change the font style
+	 - echo -e "\033[1;31m Rajiv \033[m Gupta" ---> only change Rajiv font color
+- pwd--- #check present working directory
+- cd--- # change directory 
+      - cd project  ---> #now will goto the project folder
+	  - cd ..	#go back to previous directory 
+	  - cd -     #go to that directory from which you came
+      - cd ~     # directly goto home directory	  
+	  
+- touch--- # create a empty file(# touch test1.txt --> test1.txt file will create) also change the timestemp
+
+- bc-- # basic calculation
+     - bc    # then we can work as calculator on terminal
+	 control d  # exit from calculator
+- head
+	- head test.txt     # will show top 10 row from test.txt file
+	- head -15 test.txt  # will show top 15 row form test.txt file
+	
+- tail
+	- tail test.txt   # will show last 10 row
+	- tail -15 test.txt  # will show last 15 row
+	
+- more
+	- more accesslog.txt    # will show the content of file in live mode but we can not use the up key
+	
+- less
+	- less  accesslog.txt  # same work as "more" command but we can use up/down key for see the content
+	
+- wc   #word count
+	- wc test.txt    # will show the word, line charectors in test.txt file
+	
+- cut
+
+- file
+
+- who
+	- who     # check the current login user
+
+- sort
+
+- cat	
+	- cat test.txt 	 			#show content of test.txt file
+	- cat test1.txt test2.txt  	#show content of  test1.txt then test2.txt in same terminal
+
+- std input     #use 0>
+
+- std output    #use 1>   
+
+- std error     #use 2>
+	- lssss > output.txt 2> error.txt      #in this lssss cmd will show error on terminal so "2>" store that terminal ouput in error.txt file 
+	- lassss >> output.txt 2>&1       #in this lssss cmd will show error on terminal and ">>" use for append so all existing infor with error msg will show in ouput.txt file
+	
+- >>   #use for append
+	- ls >> logs.txt  #so using this command we can apend new content with existing content 
+
+- pipe
+	- ls | sort		# pipe is used as output od "ls" will be input of "sort". means 1st it will check that data -from current dir then it will  sort it
+	- who >>who.txt  #so output of who(login user info) will redirect/store to who.txt file
+	- who | tee who1.txt >> who.txt  # in this case output of "who" will redirect/store to who1.txt and also append the output in who.txt
+	- who | tee -a who1.txt >>who.txt	# in this case output of "who" will redirect/store and append to both files
+		
+- mkdir		#make directory
+	- mkdir test  # create a test directory
+	- mkdir -p test5/test10  # use "-p" for creating folder in folder
+	- mkdir -p /tmp/xyz/{a/{a1,a2,a3},b/{b1,b2,b3}}  # in this we create a "xyz" folder and in "xyz" 2 folder "a" and "b" then in "a" we create 3 folders "a1", "a2" and "a3"
+	
+- rmdir   #remove empty Directory
+	- rmdir test   # remove test directory
+	
+- rm
+    - rm -r xyz    # use "-r" for remove directory which is not empty, r stand for recursive
+	- rm -rv test  # also show the removed directory on terminal  , v stand for verbos
+	- rm /test/test1/test2 -rv  # in this only test2 directory will remove/delete
+	- rm test.txt   #remove the test.txt file
+	- rm -rvf 1 2 3 4  #remove 1 2 3 4 files forcefully
+	- rm -rvf *    # remove all files
+	
+- ls    #List
+	- ls -a    #list all file includig  hidden files
+	- ls -l    # will show all details about files/dir
+	      -rw-rw-r-- 1 rajiv root 43 oct 6 23:09 test.txt   #output from above cmd so "rajiv" is "user", "root" is "group" "43" is size of file and "1" for "ln/inode no"  
+	      -rw-rw-r--     #first "-" show the it a file then 
+		  drw-rw-r--	 #first "d" show the it a directory
+		  rw-   #user
+		  rw-   #group
+		  r--   #other
+	- ls -lh   # show the size of file in "K" , "M"  kilobyte , megabytes
+	- ls -la   # show all long list with hidden files
+	- ls -l /b*  # will show all folder start with "b"
+	- ls -l [!b]*  #will show all folders except "b"
+
+- ln    #link  
+	- soft link   #for creating shortcut
+	- hard link   # if we do hard link to any file then if do changes in any file then it will reflect in both files
+	     - hard link is not allowed for any directory
+	- ln -s /tmp/ ~/my_tmp_short    #so my_tmp_short shortcut will create in home directory same as tmp directory but we remove the tmp directly then soft link broken and called as "dangling pointer problem"
+	- ln test.txt ~/my_hard_link.txt  #my_hard_link.txt(hard link file) file will created same as test.txt
+
+- cp  #copy
+	- cp copy.txt ~/   #  copy file copy.txt to home directory
+	- cp -rvf test* /temp  # copy all test file/directory to tmp directory
+
+- mv   #move
+	- mv test_dir/ test    # test_dir directory name will change to "test"
+	- mv test5.txt test    #move test5.txt file from differnt folder to test folder
+	
+- chmod   # change mode
+	 -rw-rw-r-- 1 rajiv root 43 oct 6 23:09 test.txt
+	 chmod o-r test.txt   		# remove the read permission for other, so output will -rw-rw----
+	 chmod g-rw test.txt   		# remove the reat and write permission for group so output will -rw-------
+	 chmod go+r test.txt		# add read permission to group and other
+	 chmod 766 test.txt    	
+			read--r-4
+			write-w-2
+			execute-x -1
+	 chmod 1775 test.txt  		#use "1" as "sticky bit" for directory and directory must be executable
+	    - if we add read/write/executable permission to group then any member can delete other member file so overcome for the we use "1" as "sticky bit"
+- umask
+
+- chgrp
+
+- chown
+
+-	
