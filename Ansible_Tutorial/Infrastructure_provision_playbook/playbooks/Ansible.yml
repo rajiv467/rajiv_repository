@@ -1,0 +1,201 @@
+********************Variable****************************
+
+var: 
+	package: httpd
+task:
+	- name: install linux server
+	  action: yum name= "{{package}}" state= installed
+	  
+	  
+*******************Handlers************************
+
+task: 
+	- name: install httpd server
+	  action: yum name= httpd state= installed
+	  notify: restarted httpd
+handler:
+	- name: restarted httpd
+	  action: service name= httpd state= restarted
+	  
+
+***********************Loop**********************
+
+task:
+	- name: create new user
+	  user: name = "{{item}}" state= present
+	  with_items:
+		- raj
+		- khushi
+		- Manoj
+		
+		
+**********************Condition************************
+
+task:
+   - name: install apache on debian
+     command: apt-get install -y apache2
+	 when: ansible_os_family == "Debian"
+	 
+   - name: Install httpd on RedHat	
+     command: yum install -y htttps
+	 when: ansible_os_family == "RedHat"
+	 
+	 
+	 
+************************* Provision Ec2 on aws using Ansible ******************************
+# Basic provisioning example
+
+amazon.aws.ec2:
+	key_name: mykey
+	instance_type: t2.micro
+	image: ami-12345
+	wait: yes
+	group: webserver
+	count: 3
+	vpc_subnet_id: subnet-12345
+	assigned_public_ip: yes
+	
+# Advanced example with tagging and CloudWatch
+	key_name: mykey
+	instance_type: t2.micro
+	image: ami-123456
+	wait: yes
+	group: webserver
+	count: 5
+	instance tag:
+		db: postgre
+	monitoring: yes
+	vpc_subnet_id: subnet-12345
+	assigned_public_ip: yes
+	
+
+# Launch instances, runs some tasks
+# and then terminate them
+
+- name: create a ec2 server
+  hosts: local
+  gething_facts: False
+  vars:
+	keypair: mykey
+	instance_type: t2.micro
+	image: ami-1234
+	region: us-east-1
+  task:
+	- name: luanch instance
+	  amazon.aws.2ec2
+		key_name: "{{keypair}}"
+		instance_type: "{{instance_type}}"
+		image: "{{image}}"
+		region: "{{region}}"
+		wait: true
+		vpc_subnet_id: subnet:12344
+		assigned_public_ip: yes
+	register: ec2
+	
+    - name: Add new instance to host group
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: launched
+      loop: "{{ ec2.instances }}"
+
+    - name: Wait for SSH to come up
+      delegate_to: "{{ item.public_dns_name }}"
+      wait_for_connection:
+        delay: 60
+        timeout: 320
+      loop: "{{ ec2.instances }}"	
+	  
+	  
+# Start a few existing instances, run some tasks
+# and stop the instances
+
+- name: Start sandbox instances
+  hosts: localhost
+  gather_facts: false
+  vars:
+    instance_ids:
+      - 'i-xxxxxx'
+      - 'i-xxxxxx'
+      - 'i-xxxxxx'
+    region: us-east-1
+  tasks:
+    - name: Start the sandbox instances
+      amazon.aws.ec2:
+        instance_ids: '{{ instance_ids }}'
+        region: '{{ region }}'
+        state: running
+        wait: True
+        vpc_subnet_id: subnet-29e63245
+        assign_public_ip: yes
+  roles:
+    - do_neat_stuff
+    - do_more_neat_stuff
+
+- name: Stop sandbox instances
+  hosts: localhost
+  gather_facts: false
+  vars:
+    instance_ids:
+      - 'i-xxxxxx'
+      - 'i-xxxxxx'
+      - 'i-xxxxxx'
+    region: us-east-1
+  tasks:
+    - name: Stop the sandbox instances
+      amazon.aws.ec2:
+        instance_ids: '{{ instance_ids }}'
+        region: '{{ region }}'
+        state: stopped
+        wait: True
+        vpc_subnet_id: subnet-29e63245
+        assign_public_ip: yes
+
+
+# Start stopped instances specified by tag
+#
+- amazon.aws.ec2:
+    instance_tags:
+        Name: ExtraPower
+    state: running
+
+#
+# Restart instances specified by tag
+#
+- amazon.aws.ec2:
+    instance_tags:
+        Name: ExtraPower
+    state: restarted
+
+# count_tag complex argument examples
+#
+
+    # instances with tag foo
+- amazon.aws.ec2:
+    count_tag:
+        foo:
+
+    # instances with tag foo=bar
+- amazon.aws.ec2:
+    count_tag:
+        foo: bar
+
+    # instances with tags foo=bar & baz
+- amazon.aws.ec2:
+    count_tag:
+        foo: bar
+        baz:
+
+    # instances with tags foo & bar & baz=bang
+- amazon.aws.ec2:
+    count_tag:
+        - foo
+        - bar
+        - baz: bang
+
+
+
+* *********************************Creation of user and password************************************
+
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_and_managing_identity_management/managing-user-accounts-using-ansible-playbooks_configuring-and-managing-idm	  
+
+
