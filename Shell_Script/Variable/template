@@ -1,0 +1,12 @@
+#!/bin/bash
+echo -e "Please provide filename you want to create: \c"   #ask to user which file he want to create
+read -r file          # read the input from user and store in file variable
+touch /script/$file.sh   # USing this varible add this script
+echo '#!/bin/bash' > /script/$file.sh   
+echo '#Purpose:'  >> /script/$file.sh    # append the purpose of the file in file.sh
+echo '#Version:' >> /script/$file.sh 
+echo '#Created Date:' 'date'  >> /script/$file.sh
+echo '#Modified Date:' >> /script/$file.sh
+echo '#Author: Rajiv Gupta' >> /script/$file.sh
+echo '# START #' >> /script/$file.sh
+echo ' # END #' >> /script/$file.sh
