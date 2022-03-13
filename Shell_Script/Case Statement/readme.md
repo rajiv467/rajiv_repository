@@ -1,0 +1,8 @@
+# exapmle of case statement
+case value in 
+1).....;
+2).....;
+3)....;
+
+*)....;
+esac
