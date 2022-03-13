@@ -172,4 +172,6 @@
 - chown     #change owner
 	- chown testuser f1.txt    # in this case we change the user(testuser) from existing one of f1.txt file
 
--	
+- virsh console c4p-ftp02   #check console	
+- virsh dominfo c4p-ftp02    #symtem info
+- cat /etc/fstab         #mount file
