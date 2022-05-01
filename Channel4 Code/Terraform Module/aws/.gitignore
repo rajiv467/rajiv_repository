@@ -1,0 +1,31 @@
+## gitignore - for Terraform infrastructure-stacks
+
+# ignore local state files
+*.tfstate
+*.tfstate.backup
+*.tfstate.*.backup
+
+# ignore plan files
+*.plan
+
+# ignore terraform directory
+**/.terraform
+
+# crash logs
+crash.log
+
+# error logs
+terraform-error-*.log
+
+# gradle tmp space
+**/.gradle
+
+# VS Code
+**/.vscode
+
+# Compiled Python files
+*.pyc
+
+# TF 0.12 versions (not required for modules)
+**/versions.tf
+
