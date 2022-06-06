@@ -175,3 +175,41 @@
 - virsh console c4p-ftp02   #check console	
 - virsh dominfo c4p-ftp02    #symtem info
 - cat /etc/fstab         #mount file
+
+
+- $ find <Path_To_Old_Files> -mtime +30 -delete;               #following command to delete the files which are not required anymore
+
+-$ find /home/sk/Downloads -mtime +30 -print                #For example, to find out the files which are older than 30 days in /home/sk/Downloads directory, just run:
+
+- :w   -- save a file
+- :q!   -- to quit without saving
+- :q    to exit Vim
+
+- ps aux    #show all runninf processs from your computer
+
+- ps aux | grep firefox  # check particular process use grep
+- kill <id of process>   # kill/stop process
+- lsof   # list of open file/directory
+- top   #show all running process with cpu/memory details
+- load average <last 1 min> <5 min ago> <15 min ago>
+
+- sudo journalctl -u sshd    # find the log of a services
+
+- journalctl -n 10    # n number of entries
+- sudo journalctl -f -u sshd  # continuous stream of logs
+
+- sudo journalctl  since yesterday
+- journalctl --disk-usage
+
+- df -H linux command for check disk space
+- sudo netstat -tulpn | grep LISTEN    #linux check open ports
+-  sudo lsof -i -P -n | grep LISTEN    #linux check open ports
+
+
+--  Git Squash    commit multiple(100) as a single commit
+-- git rebase -h HEAD~3   # linux command for last 3 commit
+
+-- cherry pick    # 50 commit in dev branch and only 5 commit need to pushed in release branch 
+					#any bugs in master branch and want to commit again then use cherry-pick
+--- Git fetch    #before puling check what changed has done or those changes are required or not 
+                 #download the latest change but not commit
