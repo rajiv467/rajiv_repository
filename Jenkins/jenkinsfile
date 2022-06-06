@@ -1,0 +1,403 @@
+pipeline {
+    agent any
+
+    stage {
+        stage ('build'){
+            steps{
+                echo 'Build'
+            }
+        }
+        stage ('test') {
+            steps{
+                echo "Testing"
+            }
+        }
+        stage ('deploy'){
+            steps {
+                echo deploying
+            }
+        }
+    }
+}
+
+
+#!/usr/bin/env groovy
+pipeline {
+
+    /*
+     * Run everything on an existing agent configured with a label 'docker'.
+     * This agent will need docker, git and a jdk installed at a minimum.
+     */
+    agent {
+        node {
+            label 'docker'
+        }
+    }
+
+    // using the Timestamper plugin we can add timestamps to the console log
+    options {
+        timestamps()
+    }
+
+    environment {
+        //Use Pipeline Utility Steps plugin to read information from pom.xml into env variables
+        IMAGE = readMavenPom().getArtifactId()
+        VERSION = readMavenPom().getVersion()
+    }
+
+    stages {
+        stage('Build') {
+            agent {
+                docker {
+                    /*
+                     * Reuse the workspace on the agent defined at top-level of Pipeline but run inside a container.
+                     * In this case we are running a container with maven so we don't have to install specific versions
+                     * of maven directly on the agent
+                     */
+                    reuseNode true
+                    image 'maven:3.5.0-jdk-8'
+                }
+            }
+            steps {
+                // using the Pipeline Maven plugin we can set maven configuration settings, publish test results, and annotate the Jenkins console
+                withMaven(options: [findbugsPublisher(), junitPublisher(ignoreAttachments: false)]) {
+                    sh 'mvn clean findbugs:findbugs package'
+                }
+            }
+            post {
+                success {
+                    // we only worry about archiving the jar file if the build steps are successful
+                    archiveArtifacts(artifacts: '**/target/*.jar', allowEmptyArchive: true)
+                }
+            }
+        }
+
+        stage('Quality Analysis') {
+            parallel {
+                // run Sonar Scan and Integration tests in parallel. This syntax requires Declarative Pipeline 1.2 or higher
+                stage('Integration Test') {
+                    agent any  //run this stage on any available agent
+                    steps {
+                        echo 'Run integration tests here...'
+                    }
+                }
+                stage('Sonar Scan') {
+                    agent {
+                        docker {
+                            // we can use the same image and workspace as we did previously
+                            reuseNode true
+                            image 'maven:3.5.0-jdk-8'
+                        }
+                    }
+                    environment {
+                        //use 'sonar' credentials scoped only to this stage
+                        SONAR = credentials('sonar')
+                    }
+                    steps {
+                        sh 'mvn sonar:sonar -Dsonar.login=$SONAR_PSW'
+                    }
+                }
+            }
+        }
+
+        stage('Build and Publish Image') {
+            when {
+                branch 'master'  //only run these steps on the master branch
+            }
+            steps {
+                /*
+                 * Multiline strings can be used for larger scripts. It is also possible to put scripts in your shared library
+                 * and load them with 'libaryResource'
+                 */
+                sh """
+          docker build -t ${IMAGE} .
+          docker tag ${IMAGE} ${IMAGE}:${VERSION}
+          docker push ${IMAGE}:${VERSION}
+        """
+            }
+        }
+    }
+
+    post {
+        failure {
+            // notify users when the Pipeline fails
+            mail to: 'team@example.com',
+                    subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+                    body: "Something is wrong with ${env.BUILD_URL}"
+        }
+    }
+}
+
+
+----------------------------------------------
+
+#!/usr/bin/env groovy
+pipeline {
+   agent any
+    
+   environment {
+      VALUE_ONE = '1'
+      VALUE_TWO = '2'
+      VALUE_THREE = '3'
+   }
+    
+   stages {
+   
+      // skip a stage while creating the pipeline
+      stage("A stage to be skipped") {
+         when {
+            expression { false }  //skip this stage
+         }
+         steps {
+            echo 'This step will never be run'
+         }
+      }
+      
+      // Execute when branch = 'master'
+      stage("BASIC WHEN - Branch") {
+         when {
+            branch 'master'
+	 }
+         steps {
+            echo 'BASIC WHEN - Master Branch!'
+         }
+      }
+      
+      // Expression based when example with AND
+      stage('WHEN EXPRESSION with AND') {
+         when {
+            expression {
+               VALUE_ONE == '1' && VALUE_THREE == '3'
+            }
+         }
+         steps {
+            echo 'WHEN with AND expression works!'
+         }
+      }
+      
+      // Expression based when example
+      stage('WHEN EXPRESSION with OR') {
+         when {
+            expression {
+               VALUE_ONE == '1' || VALUE_THREE == '2'
+            }
+         }
+         steps {
+            echo 'WHEN with OR expression works!'
+         }
+      }
+      
+      // When - AllOf Example
+      stage("AllOf") {
+        when {
+            allOf {
+                environment name:'VALUE_ONE', value: '1'
+                environment name:'VALUE_TWO', value: '2'
+            }
+        }
+        steps {
+            echo "AllOf Works!!"
+        }
+      }
+      
+      // When - Not AnyOf Example
+      stage("Not AnyOf") {
+         when {
+            not {
+               anyOf {
+                  branch "development"
+                  environment name:'VALUE_TWO', value: '4'
+               }
+            }
+         }
+         steps {
+            echo "Not AnyOf - Works!"
+         }
+      }
+   }
+}
+
+
+----------------------------------
+
+
+pipeline {
+    agent {
+        // Define agent details here
+    }
+    environment {
+        // The MY_KUBECONFIG environment variable will be assigned
+        // the value of a temporary file.  For example:
+        //   /home/user/.jenkins/workspace/cred_test@tmp/secretFiles/546a5cf3-9b56-4165-a0fd-19e2afe6b31f/kubeconfig.txt
+        MY_KUBECONFIG = credentials('my-kubeconfig')
+    }
+    stages {
+        stage('Example stage 1') {
+            steps {
+                sh("kubectl --kubeconfig $MY_KUBECONFIG get pods")
+            }
+        }
+    }
+}
+
+----------------------
+
+#SSH User Private Key example
+
+withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'jenkins-ssh-key-for-abc', \
+                                             keyFileVariable: 'SSH_KEY_FOR_ABC', \
+                                             passphraseVariable: '', \
+                                             usernameVariable: '')]) {
+  // some block
+}
+
+---------------------------
+
+#Certificate example
+
+withCredentials(bindings: [certificate(aliasVariable: '', \
+                                       credentialsId: 'jenkins-certificate-for-xyz', \
+                                       keystoreVariable: 'CERTIFICATE_FOR_XYZ', \
+                                       passwordVariable: 'XYZ-CERTIFICATE-PASSWORD')]) {
+  // some block
+}
+
+
+--------------------------------
+Paremeter
+
+pipeline {
+  agent any
+  parameters {
+    choice(name: 'door_choice',
+      choices: 'one\ntwo\nthree\nfour',
+      description: 'What door do you choose?')
+    booleanParam(name: 'CAN_DANCE',
+      defaultValue: true,
+      description: 'Checkbox parameter')
+    string(name: 'sTrAnGePaRaM',
+      defaultValue: 'Dance!',
+      description: 'Do the funky chicken!')
+  }
+  stages {
+    stage('Example') {
+      steps {
+        echo 'Hello World!'
+        echo "Trying: ${params.door_choice}"
+        echo "We can dance: ${params.CAN_DANCE}"
+        echo "The DJ says: ${params.sTrAnGePaRaM}"
+      }
+    }
+  }
+}
+
+---------------------------------
+
+
+   
+pipeline {
+    agent any
+     tools {
+        maven 'Maven' 
+        }
+    stages {
+        stage("Test"){
+            steps{
+                // mvn test
+                sh "mvn test"
+                slackSend channel: 'youtubejenkins', message: 'Job Started'
+                
+            }
+            
+        }
+        stage("Build"){
+            steps{
+                sh "mvn package"
+                
+            }
+            
+        }
+        stage("Deploy on Test"){
+            steps{
+                // deploy on container -> plugin
+                deploy adapters: [tomcat9(credentialsId: 'tomcatserverdetails1', path: '', url: 'http://192.168.0.118:8080')], contextPath: '/app', war: '**/*.war'
+              
+            }
+            
+        }
+        stage("Deploy on Prod"){
+             input {
+                message "Should we continue?"
+                ok "Yes we Should"
+            }
+            
+            steps{
+                // deploy on container -> plugin
+                deploy adapters: [tomcat9(credentialsId: 'tomcatserverdetails1', path: '', url: 'http://192.168.0.119:8080')], contextPath: '/app', war: '**/*.war'
+
+            }
+        }
+    }
+    post{
+        always{
+            echo "========always========"
+        }
+        success{
+            echo "========pipeline executed successfully ========"
+             slackSend channel: 'youtubejenkins', message: 'Success'
+        }
+        failure{
+            echo "========pipeline execution failed========"
+             slackSend channel: 'youtubejenkins', message: 'Job Failed'
+        }
+    }
+}
+
+
+
+-----------------------------
+
+Using multiple containers
+It has become increasingly common for code bases to rely on multiple, different, technologies. For example, a repository might have both a Java-based back-end API implementation and a JavaScript-based front-end implementation. Combining Docker and Pipeline allows a Jenkinsfile to use multiple types of technologies by combining the agent {} directive, with different stages.
+
+Jenkinsfile (Declarative Pipeline)
+pipeline {
+    agent none
+    stages {
+        stage('Back-end') {
+            agent {
+                docker { image 'maven:3.8.1-adoptopenjdk-11' }
+            }
+            steps {
+                sh 'mvn --version'
+            }
+        }
+        stage('Front-end') {
+            agent {
+                docker { image 'node:16.13.1-alpine' }
+            }
+            steps {
+                sh 'node --version'
+            }
+        }
+    }
+}
+------------------
+Dockerfile
+FROM node:16.13.1-alpine
+
+RUN apk add -U subversion
+By committing this to the root of the source repository, the Jenkinsfile can be changed to build a container based on this Dockerfile and then run the defined steps using that container:
+
+Jenkinsfile (Declarative Pipeline)
+pipeline {
+    agent { dockerfile true }
+    stages {
+        stage('Test') {
+            steps {
+                sh 'node --version'
+                sh 'svn --version'
+            }
+        }
+    }
+}
