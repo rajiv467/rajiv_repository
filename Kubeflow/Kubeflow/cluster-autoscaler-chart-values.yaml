@@ -1,0 +1,26 @@
+awsRegion: eu-west-2
+cloudProvider: aws
+rbac:
+  create: true
+  serviceAccount:
+    # This value should match local.k8s_service_account_name in eks-roles.tf
+    name: cluster-autoscaler-aws-cluster-autoscaler-chart
+    annotations:
+#      This value should match terraform outputs `aws_account_id` and `cluster_autoscale_role_name`
+#      eks.amazonaws.com/role-arn: "arn:aws:iam::{aws_account_id}:role/{cluster_autoscale_role_name}"
+      eks.amazonaws.com/role-arn: "arn:aws:iam::297648339445:role/cluster-autoscaler-kf-003"
+
+autoDiscovery:
+  clusterName: kf-003
+  enabled: true
+
+image:
+#  repository: k8s.gcr.io/autoscaling/cluster-autoscaler
+  # The major, minor values should match those of your EKS.
+  # This has been configured for Kubernetes 1.18
+  # To get a list of all tags: `gcloud container images list-tags k8s.gcr.io/autoscaling/cluster-autoscaler`
+  tag: v1.18.3
+
+# To enable debugging
+extraArgs:
+  v: 0
